@@ -17,9 +17,11 @@ def ctrl_hold():
     return res
 
 
-def check_edge(a, b, uv):
+def check_edge(a, b, uv, p_a, p_b):
     a_data = uv.GetSlow(a).values()
     b_data = uv.GetSlow(b).values()
+    a_data = a_data[:3] if p_a.IsTriangle() else a_data  # check triangle
+    b_data = b_data[:3] if p_b.IsTriangle() else b_data
     counter = 0
     for vec in a_data:
         if vec in b_data:
@@ -42,9 +44,10 @@ def main():
     for ind, poly in enumerate(polys):
         data = neigh.GetPolyInfo(ind)
         for i in range(4):
+            n_ind = data['face'][i]
             if data['mark'][i] or i == 2 and poly.c == poly.d:
                 continue
-            elif data['face'][i] == -1 or check_edge(ind, data['face'][i], uv_tag):
+            elif n_ind == -1 or check_edge(ind, n_ind, uv_tag, poly, polys[n_ind]):
                 select.Select(data['edge'][i])
 
     doc.AddUndo(c4d.UNDOTYPE_CHANGE_SELECTION, obj)
